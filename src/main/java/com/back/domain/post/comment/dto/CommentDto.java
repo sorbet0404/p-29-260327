@@ -12,14 +12,14 @@ public record CommentDto(
         LocalDateTime createDate,
         LocalDateTime modifyDate
 ) {
-        public CommentDto(Comment comment) {
-                this(
-                        comment.getId(),
-                        comment.getContent(),
-                        comment.getAuthor().getId(),
-                        comment.getAuthor().getName(),
-                        comment.getCreateDate(),
-                        comment.getModifyDate()
-                );
-        }
+    public CommentDto(Comment comment) {
+        this(
+                comment.getId(),
+                comment.getContent(),
+                comment.getAuthor().getId(),
+                comment.getAuthor().getName(),
+                comment.getCreateDate(),
+                comment.getModifyDate()
+        );
+    }
 }

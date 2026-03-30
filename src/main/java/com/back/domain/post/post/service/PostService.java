@@ -47,4 +47,3 @@ public class PostService {
         postRepository.flush();
     }
 }
-
