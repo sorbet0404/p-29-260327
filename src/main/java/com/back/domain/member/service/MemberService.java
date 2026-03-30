@@ -26,7 +26,7 @@ public class MemberService {
                 }
         );
 
-        Member member = new Member(username, password, nickname);
+        Member member = new Member(username, password, nickname, apiKey );
         return memberRepository.save(member);
     }
 
