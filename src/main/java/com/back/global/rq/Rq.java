@@ -6,17 +6,17 @@ import com.back.global.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 @Component
-@RequestScope//생명주기는 request수준으로, 요청이 있을때마다 새로운 객체가 생성되고 끝나면 소멸.
+//생명주기는 request수준으로, 요청이 있을때마다 새로운 객체가 생성되고 끝나면 소멸.
 @RequiredArgsConstructor
 public class Rq {
-    private final HttpServletRequest request;
+    private final HttpServletRequest request;//얘가 사실 requestscope역할 해준다.
     private final MemberService memberService;
 
     public Member getActor() {
 
+        //얘는 어떻게 넘어온거?
         String authorizationHeader = request.getHeader("Authorization");
 
         if(authorizationHeader == null) {
