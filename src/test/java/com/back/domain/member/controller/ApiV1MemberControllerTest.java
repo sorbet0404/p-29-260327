@@ -104,6 +104,7 @@ public class ApiV1MemberControllerTest {
 
         String username = "user1";
         String password = "1234";
+        String apiKey = "user1";
 
         ResultActions resultActions = mvc
                 .perform(
@@ -135,7 +136,7 @@ public class ApiV1MemberControllerTest {
                     assertThat(apiKeyCookie).isNotNull();
 
                     if(apiKeyCookie != null) {
-                        assertThat(apiKeyCookie.getValue()).isNotBlank();
+                        assertThat(apiKeyCookie.getValue()).isEqualTo(apiKey);
                     }
                 }
         );
