@@ -6,7 +6,6 @@ import com.back.domain.member.service.MemberService;
 import com.back.global.exception.ServiceException;
 import com.back.global.rq.Rq;
 import com.back.global.rsData.RsData;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,10 +68,7 @@ public class ApiV1MemberController {
         if (!actor.getPassword().equals(reqBody.password)) {
             throw new ServiceException("401-2", "비밀번호가 일치하지 않습니다.");
         }
-        response.addCookie(
-                //new Cookie는 쿠키 추가할때 사용.
-                new Cookie("apiKey", actor.getApiKey())
-        );
+        rq.addCookie("apiKey", actor.getApiKey());
 
         return new RsData(
                 "%s님 환영합니다.".formatted(actor.getName()),
@@ -87,5 +83,15 @@ public class ApiV1MemberController {
         Member actor = rq.getActor();
         return new MemberDto(actor);
 
+    }
+    @DeleteMapping("/logout")
+    public RsData<Void> logout() {
+
+        rq.deleteCookie("apiKey");
+
+        return new RsData(
+                "로그아웃 되었습니다.",
+                "200-1"
+        );
     }
 }
