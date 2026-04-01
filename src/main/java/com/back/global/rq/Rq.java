@@ -47,10 +47,6 @@ public class Rq {
             }
         }
 
-        if(!authorizationHeader.startsWith("Bearer ")) {
-            throw new ServiceException("401-2", "잘못된 형식의 인증데이터입니다.");
-        }
-
         if(apiKey.isBlank()) {
             throw new ServiceException("401-3", "인증 정보가 존재하지 않습니다.");
         }

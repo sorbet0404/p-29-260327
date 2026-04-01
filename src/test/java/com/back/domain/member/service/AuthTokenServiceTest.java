@@ -3,8 +3,6 @@ package com.back.domain.member.service;
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.standard.ut.Ut;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,61 +10,47 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-
-
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 public class AuthTokenServiceTest {
+
     @Autowired
     private AuthTokenService authTokenService;
 
-    private long expireSeconds = 1000L * 60 * 60 * 24 * 365;
-    private String secretPattern= "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
-
-    @Autowired
-    private MemberService memberService;
     @Autowired
     private MemberRepository memberRepository;
 
+    private String secretPattern = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
+    private long expireSeconds = 1000L * 60 * 60 * 24 * 365; // 1년
 
     @Test
-    @DisplayName("authTokenService 서비스가 존재한다.")
     void t1() {
         assertThat(authTokenService).isNotNull();
     }
+
     @Test
     @DisplayName("jjwt 최신 방식으로 JWT 생성, {name=\"Paul\", age=23}")
-    void t2() {
-        // 토큰 만료기간: 1년
-        long expireMillis = 1000L * 60 * 60 * 24 * 365;
+    void t2() throws InterruptedException {
 
-        byte[] keyBytes = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890".getBytes(StandardCharsets.UTF_8);
-        SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern.getBytes(StandardCharsets.UTF_8));
+        Map<String, Object> payload = Map.of("name", "Paul", "age", 23);
 
-        // 발행 시간과 만료 시간 설정
-        Date issuedAt = new Date();
-        Date expiration = new Date(issuedAt.getTime() + expireSeconds);
+        String jwt = Ut.jwt.toString(secretPattern, expireSeconds, payload);
+        Map<String, Object> parsedPayload = Ut.jwt.payloadOrNull(jwt, secretPattern);
 
-        String jwt = Jwts.builder()
-                .claims(Map.of("name : ", "배재현", "age : ", 26)) // 내용
-                .issuedAt(issuedAt) // 생성날짜
-                .expiration(expiration) // 만료날짜
-                .signWith(secretKey) // 키 서명
-                .compact();
+        assertThat(parsedPayload)
+                .containsAllEntriesOf(payload);
 
         assertThat(jwt).isNotBlank();
 
+
         System.out.println("jwt = " + jwt);
     }
+
     @Test
     @DisplayName("Ut.jwt.toString 를 통해서 JWT 생성, {name=\"Paul\", age=23}")
     void t3() {
@@ -78,15 +62,29 @@ public class AuthTokenServiceTest {
 
         assertThat(jwt).isNotBlank();
 
+        boolean rst = Ut.jwt.isValid(jwt, secretPattern);
+        assertThat(rst).isTrue();
+
         System.out.println("jwt = " + jwt);
     }
+
     @Test
     @DisplayName("AuthTokenService를 통해서 accessToken 생성")
     void t4() {
 
-        Member member1 = memberRepository.findByUsername("user3").get();
+        Member member1 = memberRepository.findByUsername("user1").get();
         String accessToken = authTokenService.genAccessToken(member1);
         assertThat(accessToken).isNotBlank();
+
+        Map<String, Object> payload = authTokenService.payloadOrNull(accessToken);
+
+        assertThat(payload).containsAllEntriesOf(
+                Map.of(
+                        "id", member1.getId(),
+                        "name", member1.getName()
+                )
+        );
+
 
         System.out.println("accessToken = " + accessToken);
 
