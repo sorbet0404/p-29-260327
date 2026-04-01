@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -27,7 +28,7 @@ public class Rq {
         String apiKey;
         String accessToken;
 
-        if (authorizationHeader != null) {
+        if (!authorizationHeader.isBlank()) {
             // 헤더 방식
             if (!authorizationHeader.startsWith("Bearer ")) {
                 throw new ServiceException("401-2", "잘못된 형식의 인증데이터입니다.");
@@ -42,13 +43,31 @@ public class Rq {
             accessToken = getCookieValue("accessToken", "");
         }
 
-        if(apiKey.isBlank()) {
-            throw new ServiceException("401-3", "인증 정보가 존재하지 않습니다.");
+        Member member = null;
+
+        if (apiKey.isBlank()) {
+            throw new ServiceException("401-1", "apiKey가 존재하지 않습니다.");
         }
 
-        return memberService.findByApiKey(apiKey).orElseThrow(
-                () -> new ServiceException("401-1", "유효하지 않은 API 키입니다.")
-        );
+        if (!accessToken.isBlank()) {
+            Map<String, Object> payload = memberService.payloadOrNull(accessToken);
+
+            if (payload != null) {
+                int id = (int) payload.get("id");
+                member = memberService.findById(id)
+                        .orElseThrow(() -> new ServiceException("401-3", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
+            }
+        }
+
+        // accessToken으로 인증이 제대로 이루어지지 않은 경우
+        if (member == null) {
+            member = memberService
+                    .findByApiKey(apiKey)
+                    .orElseThrow(() -> new ServiceException("401-4", "API 키가 유효하지 않습니다."));
+        }
+
+        return member;
+
     }
 
     private String getHeader(String name, String defaultValue) {
