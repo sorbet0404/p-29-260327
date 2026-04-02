@@ -78,12 +78,12 @@ public class Rq {
 
         return member;
     }
-    private void setHeader(String name, String value) {
+    public void setHeader(String name, String value) {
         response.setHeader(name, value);
     }
 
 
-    private String getHeader(String name, String defaultValue) {
+    public String getHeader(String name, String defaultValue) {
         // 1. 요청(request)에서 해당 이름의 헤더 값을 가져옵니다.
         String value = request.getHeader(name);
 
@@ -96,7 +96,7 @@ public class Rq {
         return defaultValue;
     }
 
-    private String getCookieValue(String name, String defaultValue) {
+    public String getCookieValue(String name, String defaultValue) {
         // 1. 요청(request)에서 모든 쿠키를 가져옵니다.
         Cookie[] cookies = request.getCookies();
 
