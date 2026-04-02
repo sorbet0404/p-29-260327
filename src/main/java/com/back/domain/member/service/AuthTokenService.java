@@ -22,11 +22,12 @@ class AuthTokenService {
                 expireTime,
                 Map.of(
                         "id", member.getId(),
-                        "username", member.getUserName()
+                        "username", member.getUsername(),
+                        "nickname", member.getNickname()
                 )
         );
-
     }
+
     Map<String, Object> payloadOrNull(String jwt) {
         return Ut.jwt.payloadOrNull(jwt, secretKey);
     }
