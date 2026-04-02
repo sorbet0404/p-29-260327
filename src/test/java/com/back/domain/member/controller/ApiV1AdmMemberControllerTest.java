@@ -34,9 +34,14 @@ public class ApiV1AdmMemberControllerTest {
     @DisplayName("회원 다건 조회")
     void t1() throws Exception {
 
+        Member actor = memberRepository.findByUsername("admin").get();
+
         ResultActions resultActions = mvc
                 .perform(
                         get("/api/v1/adm/members")
+                                .header(
+                                        "Authorization", "Bearer %s".formatted(actor.getApiKey())
+                                )
                 )
                 .andDo(print());
 
