@@ -9,9 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -54,8 +52,8 @@ public class Rq {
 
             if (payload != null) {
                 int id = (int) payload.get("id");
-                member = memberService.findById(id)
-                        .orElseThrow(() -> new ServiceException("401-3", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
+                String name = (String) payload.get("name");
+                member = new Member(id, name);
             }
         }
 
@@ -67,28 +65,45 @@ public class Rq {
         }
 
         return member;
-
     }
 
     private String getHeader(String name, String defaultValue) {
-        return Optional
-                .ofNullable(request.getHeader(name))
-                .filter(headerValue -> !headerValue.isBlank())
-                .orElse(defaultValue);
+        // 1. 요청(request)에서 해당 이름의 헤더 값을 가져옵니다.
+        String value = request.getHeader(name);
+
+        // 2. 값이 존재(null이 아님)하고, 공백이 아닌지 확인합니다.
+        if (value != null && !value.isBlank()) {
+            return value; // 유효한 값이면 즉시 반환합니다.
+        }
+
+        // 3. 값이 없거나 공백이라면 준비해둔 기본값을 반환합니다.
+        return defaultValue;
     }
 
     private String getCookieValue(String name, String defaultValue) {
-        return Optional
-                .ofNullable(request.getCookies())
-                .flatMap(
-                        cookies ->
-                                Arrays.stream(cookies)
-                                        .filter(cookie -> cookie.getName().equals(name))
-                                        .map(Cookie::getValue)
-                                        .filter(value -> !value.isBlank())
-                                        .findFirst()
-                )
-                .orElse(defaultValue);
+        // 1. 요청(request)에서 모든 쿠키를 가져옵니다.
+        Cookie[] cookies = request.getCookies();
+
+        // 2. 쿠키가 하나도 없으면(null이면) 바로 기본값을 돌려줍니다.
+        if (cookies == null) {
+            return defaultValue;
+        }
+
+        // 3. 쿠키 배열을 하나씩 살펴봅니다. (반복문)
+        for (Cookie cookie : cookies) {
+            // 4. 쿠키의 이름이 내가 찾는 이름(name)과 같은지 확인합니다.
+            if (cookie.getName().equals(name)) {
+                String value = cookie.getValue(); // 값을 꺼내서
+
+                // 5. 값이 null이 아니고 비어있지(blank) 않은지 확인합니다.
+                if (value != null && !value.isBlank()) {
+                    return value; // 조건을 만족하면 즉시 그 값을 반환하고 함수를 끝냅니다.
+                }
+            }
+        }
+
+        // 6. 반복문을 다 돌았는데도 못 찾았다면 기본값을 반환합니다.
+        return defaultValue;
     }
 
     public void deleteCookie(String name) {

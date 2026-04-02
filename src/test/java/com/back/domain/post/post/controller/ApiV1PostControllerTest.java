@@ -269,6 +269,7 @@ public class ApiV1PostControllerTest {
 
     @Test
     @DisplayName("글 작성, 유효한 엑세스 토큰, 잘못된 apiKey")
+    @Transactional
     void t7_1() throws Exception {
         String title = "제목입니다";
         String content = "내용입니다";
